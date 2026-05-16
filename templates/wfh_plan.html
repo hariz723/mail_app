@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WFH Plan</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Inter", "SF Pro Display", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #151922;
+            --accent: #0f766e;
+            --accent-dark: #115e59;
+            --accent-soft: #e6f5f2;
+            --border: #d8dee7;
+            --muted: #667085;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 32px 18px;
+            background:
+                radial-gradient(circle at 18% 0%, rgba(15, 118, 110, 0.16), transparent 30%),
+                radial-gradient(circle at 82% 12%, rgba(99, 102, 241, 0.1), transparent 28%),
+                linear-gradient(135deg, #fbfcfd 0%, #f2f5f7 52%, #ecf1f4 100%);
+        }
+
+        main {
+            width: min(100%, 1040px);
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(216, 222, 231, 0.92);
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 24px 80px rgba(21, 25, 34, 0.12);
+            backdrop-filter: blur(18px);
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 24px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #e7ebf0;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+            line-height: 1.12;
+            letter-spacing: 0;
+            color: #111827;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex: 0 0 auto;
+        }
+
+        .week-pill,
+        .link-button,
+        .mail-button {
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 13px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .week-pill {
+            border: 1px solid #cde7e2;
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+        }
+
+        .link-button {
+            border: 1px solid var(--border);
+            background: var(--surface-soft);
+            color: #344054;
+        }
+
+        .mail-form {
+            margin: 0;
+        }
+
+        .mail-button {
+            border: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(15, 118, 110, 0.22);
+        }
+
+        .message {
+            margin: 0 0 18px;
+            padding: 12px 14px;
+            border-radius: 6px;
+            background: #ecfdf3;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .message.error {
+            background: #fff1f0;
+            border-color: #ffccc7;
+            color: #9f2f29;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+
+        table {
+            width: 100%;
+            min-width: 760px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e7ebf0;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #d9eaf7;
+            color: #172033;
+            font-weight: 800;
+        }
+
+        th:first-child,
+        td:first-child,
+        th:nth-child(2),
+        td:nth-child(2),
+        th:nth-child(3),
+        td:nth-child(3) {
+            text-align: left;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        tbody tr:hover {
+            background: var(--accent-soft);
+        }
+
+        td:nth-child(n+4) {
+            color: var(--accent-dark);
+            font-weight: 800;
+        }
+
+        .empty-state {
+            margin: 0;
+            padding: 28px;
+            color: var(--muted);
+            text-align: center;
+            font-size: 15px;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 18px 12px;
+            }
+
+            main {
+                padding: 22px;
+            }
+
+            .page-header {
+                display: block;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .actions {
+                margin-top: 14px;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <div>
+                <h1>{{ table_data.title }}</h1>
+                <p class="subtitle">Excel workbook information shown as a table.</p>
+            </div>
+            <div class="actions">
+                <a class="link-button" href="{{ url_for('index') }}">New Request</a>
+                <form class="mail-form" method="post" action="{{ url_for('send_summary_mail') }}">
+                    <button class="mail-button" type="submit">Send Mail</button>
+                </form>
+                <div class="week-pill">{{ table_data.week }}</div>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p class="message {{ category }}">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="table-wrap">
+            {% if table_data.rows %}
+                <table>
+                    <thead>
+                        <tr>
+                            {% for header in table_data.headers %}
+                                <th>{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in table_data.rows %}
+                            <tr>
+                                {% for value in row %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="empty-state">No work from home requests are available yet.</p>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

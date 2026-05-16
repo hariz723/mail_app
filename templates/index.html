@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work From Home Request</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Inter", "SF Pro Display", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f6f7f9;
+            color: #151922;
+            --accent: #0f766e;
+            --accent-dark: #115e59;
+            --accent-soft: #e6f5f2;
+            --border: #d8dee7;
+            --muted: #667085;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 32px 18px;
+            background:
+                radial-gradient(circle at 18% 0%, rgba(15, 118, 110, 0.16), transparent 30%),
+                radial-gradient(circle at 82% 12%, rgba(99, 102, 241, 0.1), transparent 28%),
+                linear-gradient(135deg, #fbfcfd 0%, #f2f5f7 52%, #ecf1f4 100%);
+        }
+
+        main {
+            width: min(100%, 620px);
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(216, 222, 231, 0.92);
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 24px 80px rgba(21, 25, 34, 0.12);
+            backdrop-filter: blur(18px);
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 24px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #e7ebf0;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+            line-height: 1.12;
+            letter-spacing: 0;
+            color: #111827;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .week-pill {
+            flex: 0 0 auto;
+            padding: 9px 13px;
+            border: 1px solid #cde7e2;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .link-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface-soft);
+            color: #344054;
+            font-size: 13px;
+            font-weight: 800;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex: 0 0 auto;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 18px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        label {
+            color: #283142;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        input,
+        select {
+            width: 100%;
+            min-height: 48px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 15px;
+            color: #151922;
+            background: var(--surface-soft);
+            outline: none;
+            transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+        }
+
+        input::placeholder {
+            color: #98a2b3;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent);
+            background: var(--surface);
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.14);
+        }
+
+        .choice {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .choice label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 50px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface-soft);
+            color: #344054;
+            font-weight: 750;
+            cursor: pointer;
+            transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+        }
+
+        .choice input {
+            width: auto;
+            min-height: auto;
+            accent-color: var(--accent);
+        }
+
+        .choice label:has(input:checked) {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+        }
+
+        button,
+        .table-button {
+            width: 100%;
+            min-height: 48px;
+            margin-top: 6px;
+            padding: 12px 18px;
+            border: 0;
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #fff;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 14px 28px rgba(15, 118, 110, 0.25);
+            transition: transform 160ms ease, box-shadow 160ms ease;
+        }
+
+        .table-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            background: var(--surface-soft);
+            color: #344054;
+            box-shadow: none;
+            text-decoration: none;
+        }
+
+        button:hover,
+        .table-button:hover {
+            transform: translateY(-1px);
+        }
+
+        button:hover {
+            box-shadow: 0 18px 34px rgba(15, 118, 110, 0.32);
+        }
+
+        .table-button:hover {
+            border-color: #cde7e2;
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+        }
+
+        button:active,
+        .table-button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            margin: 0 0 18px;
+            padding: 12px 14px;
+            border-radius: 6px;
+            background: #ecfdf3;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .message.error {
+            background: #fff1f0;
+            border-color: #ffccc7;
+            color: #9f2f29;
+        }
+
+        .hint {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        #date-group[hidden] {
+            display: none;
+        }
+
+        @media (max-width: 560px) {
+            body {
+                padding: 18px 12px;
+            }
+
+            main {
+                padding: 22px;
+            }
+
+            .page-header {
+                display: block;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .week-pill {
+                display: inline-flex;
+                margin-top: 14px;
+                white-space: normal;
+            }
+
+            .header-actions {
+                margin-top: 14px;
+                flex-wrap: wrap;
+            }
+
+            .choice {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <div>
+                <h1>Work From Home Request</h1>
+                <p class="subtitle">Submit your weekly preference and keep the team schedule balanced.</p>
+            </div>
+            <div class="header-actions">
+                <a class="link-button" href="{{ url_for('wfh_plan') }}">View WFH Plan</a>
+                <div class="week-pill">{{ week_start }} to {{ week_end }}</div>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p class="message {{ category }}">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="post">
+            <div class="form-grid">
+                <div class="field">
+                    <label for="name">Employee Name</label>
+                    <input id="name" name="name" type="text" placeholder="Enter employee name" required>
+                </div>
+
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" placeholder="name@company.com" required>
+                </div>
+
+                <div class="field">
+                    <label for="emp_id">Employee ID</label>
+                    <input id="emp_id" name="emp_id" type="text" placeholder="Enter employee ID" required>
+                </div>
+
+                <div class="field">
+                    <label>Do you want work from home?</label>
+                    <div class="choice">
+                        <label><input type="radio" name="wfh" value="Yes" required> Yes</label>
+                        <label><input type="radio" name="wfh" value="No" required> No</label>
+                    </div>
+                </div>
+
+                <div class="field" id="date-group" hidden>
+                    <label for="wfh_date">Select date in this week</label>
+                    <input id="wfh_date" name="wfh_date" type="date" min="{{ week_start }}" max="{{ week_end }}">
+                    <p class="hint">Only 4 members can choose work from home in one week.</p>
+                </div>
+
+                <button type="submit">Submit Request</button>
+                <a class="table-button" href="{{ url_for('wfh_plan') }}">View Table</a>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        const dateGroup = document.querySelector("#date-group");
+        const dateInput = document.querySelector("#wfh_date");
+        const radios = document.querySelectorAll("input[name='wfh']");
+
+        function toggleDate() {
+            const selectedOption = document.querySelector("input[name='wfh']:checked");
+            const wantsWfh = selectedOption && selectedOption.value === "Yes";
+            dateGroup.hidden = !wantsWfh;
+            dateInput.required = wantsWfh;
+            if (!wantsWfh) {
+                dateInput.value = "";
+            }
+        }
+
+        radios.forEach((radio) => radio.addEventListener("change", toggleDate));
+        toggleDate();
+    </script>
+</body>
+</html>
