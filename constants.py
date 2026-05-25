@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 DATA_FILE = Path(__file__).with_name("wfh_requests.xlsx")
-WORKBOOK_TITLE = "DESGIN ROOM WFH -PLAN"
+WORKBOOK_TITLE = "UPCOMING WFH - PLAN"
 VISIBLE_HEADERS = [
     "Name",
     "Emp ID",

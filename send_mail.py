@@ -25,74 +25,100 @@ def send_mail(to_email, subject, body, html_body=None):
 
 
 def build_wfh_summary_html(table_data):
-    header_cells = "".join(f"<th>{escape(str(header))}</th>" for header in table_data["headers"])
-    body_rows = []
     weekday_headers = {"Mon", "Tue", "Wed", "Thu", "Fri"}
-
-    for index, row in enumerate(table_data["rows"], start=1):
-        cells = [f"<td>{index}</td>"]
-        for column_index, value in enumerate(row):
-            header = table_data["headers"][column_index]
+    
+    header_html = "".join([
+        f'<th style="padding: 12px 8px; border-bottom: 2px solid #e2e8f0; text-align: center; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">{escape(str(header))}</th>'
+        for header in table_data["headers"]
+    ])
+    
+    rows_html = []
+    for index, row in enumerate(table_data["rows"]):
+        cells = [f'<td style="padding: 12px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 13px;">{index + 1}</td>']
+        for col_idx, value in enumerate(row):
+            header = table_data["headers"][col_idx]
             display_value = value or ""
-            css_class = ""
+            
+            # Base styles for cells
+            cell_style = "padding: 12px 8px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #1e293b;"
+            
+            # Alignment logic
+            if col_idx < 3: # ID, Name, etc usually first few cols
+                cell_style += " text-align: left;"
+            else:
+                cell_style += " text-align: center;"
 
+            # WFH Highlighting
             if header in weekday_headers:
                 display_value = display_value or "WFO"
-                css_class = "wfh-day" if display_value == "WFH" else ""
-
-            cells.append(f"<td class=\"{css_class}\">{escape(str(display_value))}</td>")
-
-        body_rows.append(f"<tr>{''.join(cells)}</tr>")
+                if display_value == "WFH":
+                    cell_style += " color: #0f766e; font-weight: 600; background-color: #f0fdfa;"
+                else:
+                    cell_style += " color: #64748b;"
+            
+            cells.append(f'<td style="{cell_style}">{escape(str(display_value))}</td>')
+        
+        bg_color = "#ffffff" if index % 2 == 0 else "#f8fafc"
+        rows_html.append(f'<tr style="background-color: {bg_color};">{"".join(cells)}</tr>')
 
     return f"""
-    <!doctype html>
+    <!DOCTYPE html>
     <html>
-    <body style="font-family: Arial, sans-serif; color: #222;">
-        <p>Hello Team,</p>
-        <p>Kindly find the below <strong>WFH plan</strong> for our team members for <strong>{escape(str(table_data["week"]))}</strong>.</p>
-
-        <table cellpadding="0" cellspacing="0" style="border-collapse: collapse; font-size: 13px; min-width: 640px;">
-            <thead>
-                <tr>
-                    <th colspan="{len(table_data["headers"]) + 1}" style="background: #5b9bd5; color: #0b2239; border: 1px solid #444; padding: 10px; text-align: left;">
-                        {escape(str(table_data["title"]))}
-                    </th>
-                </tr>
-                <tr>
-                    <th style="background: #d9eaf7; border: 1px solid #444; padding: 8px;">#</th>
-                    {header_cells}
-                </tr>
-            </thead>
-            <tbody>
-                {''.join(body_rows)}
-            </tbody>
-        </table>
-
-        <p>Regards,<br>Design Room</p>
-
-        <style>
-            th, td {{
-                border: 1px solid #444;
-                padding: 8px 10px;
-                text-align: center;
-            }}
-
-            th {{
-                background: #d9eaf7;
-                font-weight: 700;
-            }}
-
-            td:nth-child(2),
-            td:nth-child(3),
-            td:nth-child(4) {{
-                text-align: left;
-            }}
-
-            .wfh-day {{
-                background: #fff200;
-                font-weight: 700;
-            }}
-        </style>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 20px 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+        <div style="max-width: 800px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #e2e8f0;">
+            <!-- Header -->
+            <div style="padding: 32px 24px; background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); color: #ffffff;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em;">{escape(str(table_data["title"]))}</h1>
+                <p style="margin: 8px 0 0 0; font-size: 16px; color: #ccfbf1; opacity: 0.9;">Weekly attendance and work plan</p>
+            </div>
+            
+            <!-- Content -->
+            <div style="padding: 24px;">
+                <div style="margin-bottom: 24px; display: inline-block; padding: 6px 12px; background-color: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 20px; color: #0f766e; font-size: 14px; font-weight: 600;">
+                    {escape(str(table_data["week"]))}
+                </div>
+                
+                <p style="margin: 0 0 20px 0; font-size: 15px; color: #475569; line-height: 1.5;">
+                    Hello Team, <br><br>
+                    Please find the updated Work From Home (WFH) schedule for the upcoming week.
+                </p>
+                
+                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <table style="width: 100%; border-collapse: separate; border-spacing: 0; min-width: 600px;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 12px 8px; border-bottom: 2px solid #e2e8f0; text-align: center; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">#</th>
+                                {header_html}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {"".join(rows_html)}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Footer -->
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e2e8f0;">
+                    <p style="margin: 0; font-size: 14px; color: #64748b;">
+                        Best regards,<br>
+                        <strong style="color: #1e293b;">Design Room Team</strong>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Bottom Accent -->
+            <div style="height: 4px; background: linear-gradient(90deg, #0f766e, #14b8a6);"></div>
+        </div>
+        
+        <div style="max-width: 800px; margin: 16px auto; text-align: center;">
+            <p style="font-size: 12px; color: #94a3b8;">
+                This is an automated notification. Please do not reply directly to this email.
+            </p>
+        </div>
     </body>
     </html>
     """

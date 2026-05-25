@@ -46,6 +46,13 @@ def current_week_range():
     return start, end
 
 
+def next_week_range():
+    current_week_start, _ = current_week_range()
+    start = current_week_start + timedelta(days=7)
+    end = start + timedelta(days=6)
+    return start, end
+
+
 def week_range_for(selected_date):
     start = selected_date - timedelta(days=selected_date.weekday())
     end = start + timedelta(days=6)
@@ -358,9 +365,9 @@ def submit_wfh_request(name, email, emp_id, wfh, wfh_date_text):
     except ValueError:
         return RequestResult("Please select a valid work from home date.", "error")
 
-    this_week_start, this_week_end = current_week_range()
-    if not this_week_start <= selected_date <= this_week_end:
-        return RequestResult("Please select a date from this week only.", "error")
+    next_week_start, next_week_end = next_week_range()
+    if not next_week_start <= selected_date <= next_week_end:
+        return RequestResult("Please select a date from next week only.", "error")
 
     selected_week_start, selected_week_end = week_range_for(selected_date)
     workbook = get_workbook()
