@@ -25,7 +25,7 @@ def send_mail(to_email, subject, body, html_body=None):
 
 
 def build_wfh_summary_html(table_data):
-    weekday_headers = {"Mon", "Tue", "Wed", "Thu", "Fri"}
+    weekday_prefixes = ("Mon", "Tue", "Wed", "Thu", "Fri")
     
     header_html = "".join([
         f'<th style="padding: 12px 8px; border-bottom: 2px solid #e2e8f0; text-align: center; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">{escape(str(header))}</th>'
@@ -43,13 +43,13 @@ def build_wfh_summary_html(table_data):
             cell_style = "padding: 12px 8px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #1e293b;"
             
             # Alignment logic
-            if col_idx < 3: # ID, Name, etc usually first few cols
+            if col_idx < 2:
                 cell_style += " text-align: left;"
             else:
                 cell_style += " text-align: center;"
 
             # WFH Highlighting
-            if header in weekday_headers:
+            if str(header).startswith(weekday_prefixes):
                 display_value = display_value or "WFO"
                 if display_value == "WFH":
                     cell_style += " color: #0f766e; font-weight: 600; background-color: #f0fdfa;"

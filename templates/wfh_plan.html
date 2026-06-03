@@ -26,10 +26,7 @@
             margin: 0;
             min-height: 100vh;
             padding: 32px 18px;
-            background:
-                radial-gradient(circle at 18% 0%, rgba(15, 118, 110, 0.16), transparent 30%),
-                radial-gradient(circle at 82% 12%, rgba(99, 102, 241, 0.1), transparent 28%),
-                linear-gradient(135deg, #fbfcfd 0%, #f2f5f7 52%, #ecf1f4 100%);
+            background: #f3f6f8;
         }
 
         main {
@@ -163,9 +160,7 @@
         th:first-child,
         td:first-child,
         th:nth-child(2),
-        td:nth-child(2),
-        th:nth-child(3),
-        td:nth-child(3) {
+        td:nth-child(2) {
             text-align: left;
         }
 
@@ -177,7 +172,7 @@
             background: var(--accent-soft);
         }
 
-        td:nth-child(n+4) {
+        td:nth-child(n+3) {
             color: var(--accent-dark);
             font-weight: 800;
         }
@@ -219,7 +214,7 @@
         <div class="page-header">
             <div>
                 <h1>{{ table_data.title }}</h1>
-                <p class="subtitle">Excel workbook information shown as a table.</p>
+                <p class="subtitle">Weekly WFH plan from the saved roster table.</p>
             </div>
             <div class="actions">
                 <a class="link-button" href="{{ url_for('index') }}">New Request</a>
