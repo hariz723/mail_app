@@ -36,6 +36,79 @@ WEEK_START_COLUMN = METADATA_START_COLUMN + METADATA_HEADERS.index("Week Start")
 WEEK_END_COLUMN = METADATA_START_COLUMN + METADATA_HEADERS.index("Week End")
 STATUS_COLUMN = METADATA_START_COLUMN + METADATA_HEADERS.index("Status")
 RANGE_FILE_PATTERN = "*_to_*.xlsx"
+USERS_FILE = DATA_DIR / "users.xlsx"
+USER_HEADERS = ["Name", "TID", "Mail ID"]
+
+
+def normalize_text(value):
+    return str(value or "").strip()
+
+
+def create_users_workbook():
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Users"
+
+    for column, header in enumerate(USER_HEADERS, start=1):
+        cell = sheet.cell(row=1, column=column, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill("solid", fgColor="D9EAF7")
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    for employee in EMPLOYEES:
+        sheet.append([
+            normalize_text(employee.get("name")),
+            normalize_text(employee.get("tid")),
+            normalize_text(employee.get("email")),
+        ])
+
+    sheet.column_dimensions["A"].width = 28
+    sheet.column_dimensions["B"].width = 14
+    sheet.column_dimensions["C"].width = 30
+    workbook.save(USERS_FILE)
+    return workbook
+
+
+def get_users_workbook():
+    if USERS_FILE.exists():
+        return load_workbook(USERS_FILE)
+    return create_users_workbook()
+
+
+def get_employees():
+    workbook = get_users_workbook()
+    sheet = workbook.active
+    employees = []
+
+    for row in sheet.iter_rows(min_row=2, max_col=len(USER_HEADERS), values_only=True):
+        name, tid, email = [normalize_text(value) for value in row]
+        if name:
+            employees.append({"name": name, "tid": tid, "email": email})
+
+    return employees
+
+
+def get_user_records():
+    return [
+        {**employee, "index": index}
+        for index, employee in enumerate(get_employees())
+    ]
+
+
+def get_user_sheet_row(sheet, user_index):
+    current_index = 0
+
+    for row_number in range(2, sheet.max_row + 1):
+        name = normalize_text(sheet.cell(row=row_number, column=1).value)
+        if not name:
+            continue
+
+        if current_index == user_index:
+            return row_number
+
+        current_index += 1
+
+    return None
 
 
 def get_range_file(week_start, week_end):
@@ -222,11 +295,12 @@ def get_sheet_week_end(sheet):
 
 def write_roster_rows(sheet, week_start, week_end, selections=None):
     selections = selections or set()
+    employees = get_employees()
 
     if sheet.max_row > 3:
         sheet.delete_rows(4, sheet.max_row - 3)
 
-    for employee_index, employee in enumerate(EMPLOYEES):
+    for employee_index, employee in enumerate(employees):
         row_number = sheet.max_row + 1
         sheet.cell(row=row_number, column=NAME_COLUMN, value=employee["name"])
         sheet.cell(row=row_number, column=TID_COLUMN, value=employee["tid"])
@@ -244,6 +318,8 @@ def write_roster_rows(sheet, week_start, week_end, selections=None):
 
 
 def parse_selection(selection):
+    employees = get_employees()
+
     try:
         employee_index_text, weekday_index_text = selection.split("|", 1)
         employee_index = int(employee_index_text)
@@ -251,7 +327,7 @@ def parse_selection(selection):
     except ValueError:
         return None
 
-    if employee_index < 0 or employee_index >= len(EMPLOYEES):
+    if employee_index < 0 or employee_index >= len(employees):
         return None
     if weekday_index not in WEEKDAY_COLUMNS:
         return None
@@ -315,6 +391,7 @@ def get_selected_cells(sheet=None):
 
 
 def get_wfh_selection_table(week_start_text=None, week_end_text=None):
+    employees = get_employees()
     selected = set()
     requested_week_start = parse_date(week_start_text)
     requested_week_end = parse_date(week_end_text)
@@ -333,7 +410,7 @@ def get_wfh_selection_table(week_start_text=None, week_end_text=None):
     }
 
     rows = []
-    for employee_index, employee in enumerate(EMPLOYEES):
+    for employee_index, employee in enumerate(employees):
         rows.append({
             "index": employee_index,
             "name": employee["name"],
@@ -365,14 +442,165 @@ def get_wfh_selection_table(week_start_text=None, week_end_text=None):
     }
 
 
+def append_user_to_active_plan(employee):
+    workbook = get_workbook()
+    if workbook is None:
+        return
+
+    sheet = workbook.active
+    week_start = get_sheet_week_start(sheet) or next_week_range()[0]
+    week_end = get_sheet_week_end(sheet) or week_start + timedelta(days=6)
+    row_number = sheet.max_row + 1
+
+    sheet.cell(row=row_number, column=NAME_COLUMN, value=employee["name"])
+    sheet.cell(row=row_number, column=TID_COLUMN, value=employee["tid"])
+    sheet.cell(row=row_number, column=METADATA_START_COLUMN, value=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    sheet.cell(row=row_number, column=EMAIL_COLUMN, value=employee.get("email", ""))
+    sheet.cell(row=row_number, column=WEEK_START_COLUMN, value=week_start.isoformat())
+    sheet.cell(row=row_number, column=WEEK_END_COLUMN, value=week_end.isoformat())
+    sheet.cell(row=row_number, column=STATUS_COLUMN, value="Approved")
+    style_data_row(sheet, row_number)
+    workbook.save(get_range_file(week_start, week_end))
+
+
+def update_active_plan_user(original_employee, updated_employee):
+    workbook = get_workbook()
+    if workbook is None:
+        return
+
+    sheet = workbook.active
+    week_start = get_sheet_week_start(sheet) or next_week_range()[0]
+    week_end = get_sheet_week_end(sheet) or week_start + timedelta(days=6)
+
+    for row_number in range(4, sheet.max_row + 1):
+        name = normalize_text(sheet.cell(row=row_number, column=NAME_COLUMN).value).upper()
+        tid = normalize_text(sheet.cell(row=row_number, column=TID_COLUMN).value).upper()
+
+        if name == original_employee["name"].upper() and tid == original_employee["tid"].upper():
+            sheet.cell(row=row_number, column=NAME_COLUMN, value=updated_employee["name"])
+            sheet.cell(row=row_number, column=TID_COLUMN, value=updated_employee["tid"])
+            sheet.cell(row=row_number, column=EMAIL_COLUMN, value=updated_employee.get("email", ""))
+            style_data_row(sheet, row_number)
+            workbook.save(get_range_file(week_start, week_end))
+            return
+
+
+def delete_active_plan_user(employee):
+    workbook = get_workbook()
+    if workbook is None:
+        return
+
+    sheet = workbook.active
+    week_start = get_sheet_week_start(sheet) or next_week_range()[0]
+    week_end = get_sheet_week_end(sheet) or week_start + timedelta(days=6)
+
+    for row_number in range(sheet.max_row, 3, -1):
+        name = normalize_text(sheet.cell(row=row_number, column=NAME_COLUMN).value).upper()
+        tid = normalize_text(sheet.cell(row=row_number, column=TID_COLUMN).value).upper()
+
+        if name == employee["name"].upper() and tid == employee["tid"].upper():
+            sheet.delete_rows(row_number, 1)
+            workbook.save(get_range_file(week_start, week_end))
+            return
+
+
+def add_user(name, tid="", email=""):
+    name = normalize_text(name).upper()
+    tid = normalize_text(tid).upper()
+    email = normalize_text(email)
+
+    if not name:
+        return RequestResult("Name is required.", "error"), None
+
+    employees = get_employees()
+    duplicate_name = any(employee["name"].upper() == name for employee in employees)
+    duplicate_tid = tid and any(employee["tid"].upper() == tid for employee in employees)
+
+    if duplicate_name:
+        return RequestResult("A user with this name already exists.", "error"), None
+    if duplicate_tid:
+        return RequestResult("A user with this TID already exists.", "error"), None
+
+    workbook = get_users_workbook()
+    sheet = workbook.active
+    employee = {"name": name, "tid": tid, "email": email}
+    sheet.append([employee["name"], employee["tid"], employee["email"]])
+    workbook.save(USERS_FILE)
+    append_user_to_active_plan(employee)
+
+    return RequestResult(f"{name} has been added to the user roster."), employee
+
+
+def update_user(user_index, name, tid="", email=""):
+    name = normalize_text(name).upper()
+    tid = normalize_text(tid).upper()
+    email = normalize_text(email)
+
+    if not name:
+        return RequestResult("Name is required.", "error"), None
+
+    workbook = get_users_workbook()
+    sheet = workbook.active
+    row_number = get_user_sheet_row(sheet, user_index)
+
+    if row_number is None:
+        return RequestResult("User was not found.", "error"), None
+
+    employees = get_employees()
+    original_employee = employees[user_index]
+    duplicate_name = any(
+        index != user_index and employee["name"].upper() == name
+        for index, employee in enumerate(employees)
+    )
+    duplicate_tid = tid and any(
+        index != user_index and employee["tid"].upper() == tid
+        for index, employee in enumerate(employees)
+    )
+
+    if duplicate_name:
+        return RequestResult("A user with this name already exists.", "error"), None
+    if duplicate_tid:
+        return RequestResult("A user with this TID already exists.", "error"), None
+
+    updated_employee = {"name": name, "tid": tid, "email": email}
+    sheet.cell(row=row_number, column=1, value=updated_employee["name"])
+    sheet.cell(row=row_number, column=2, value=updated_employee["tid"])
+    sheet.cell(row=row_number, column=3, value=updated_employee["email"])
+    workbook.save(USERS_FILE)
+    update_active_plan_user(original_employee, updated_employee)
+
+    return RequestResult(f"{name} has been updated."), updated_employee
+
+
+def delete_user(user_index):
+    workbook = get_users_workbook()
+    sheet = workbook.active
+    row_number = get_user_sheet_row(sheet, user_index)
+
+    if row_number is None:
+        return RequestResult("User was not found.", "error")
+
+    employees = get_employees()
+    employee = employees[user_index]
+    sheet.delete_rows(row_number, 1)
+    workbook.save(USERS_FILE)
+    delete_active_plan_user(employee)
+
+    return RequestResult(f"{employee['name']} has been deleted.")
+
+
 def get_wfh_plan_table():
     workbook = get_workbook()
     if workbook is None:
+        rows = [
+            [employee["name"], employee["tid"], *["" for _ in WEEKDAY_LABELS]]
+            for employee in get_employees()
+        ]
         return {
             "title": WORKBOOK_TITLE,
             "week": "",
             "headers": ["Name", "TID", *WEEKDAY_LABELS],
-            "rows": [],
+            "rows": rows,
         }
 
     sheet = workbook.active

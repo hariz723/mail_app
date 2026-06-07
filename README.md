@@ -5,6 +5,8 @@ Flask application for selecting a weekly work-from-home roster, storing it in an
 ## Features
 
 - Work-from-home roster table
+- Add users from the UI or `/api/users`
+- Excel-backed user roster saved in `users.xlsx`
 - Employee columns: name and TID
 - User-selected 7-day date range with weekday date columns and checkboxes
 - Maximum 4 WFH selections per day
@@ -28,6 +30,7 @@ mail_app/
 ├── templates/
 │   ├── index.html
 │   └── wfh_plan.html
+├── users.xlsx
 └── 2026-06-08_to_2026-06-14.xlsx
 ```
 
@@ -94,9 +97,17 @@ WFH table view:
 http://localhost:5000/wfh-plan
 ```
 
+Add a user from the API:
+
+```bash
+curl -X POST http://localhost:5000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"New User","tid":"T12345","email":"new.user@example.com"}'
+```
+
 ## Excel File
 
-When you click `Save WFH Plan`, the app creates an Excel file named with the selected week range.
+The user roster is stored in `users.xlsx`. On first run, the app creates this file from the employee list in `constants.py`. When you click `Save WFH Plan`, the app creates an Excel file named with the selected week range.
 
 Example:
 

@@ -218,6 +218,7 @@
             </div>
             <div class="actions">
                 <a class="link-button" href="{{ url_for('index') }}">New Request</a>
+                <a class="link-button" href="{{ url_for('manage_users') }}">Manage Users</a>
                 <form class="mail-form" method="post" action="{{ url_for('send_summary_mail') }}">
                     <button class="mail-button" type="submit">Send Mail</button>
                 </form>

@@ -139,7 +139,9 @@
             font-weight: 800;
         }
 
-        input[type="date"] {
+        input[type="date"],
+        input[type="text"],
+        input[type="email"] {
             width: 100%;
             min-height: 42px;
             padding: 9px 11px;
@@ -314,6 +316,7 @@
                 <p class="subtitle">Select the date range and WFH days from the team list. Maximum {{ table_data.daily_limit }} members can be selected per day.</p>
             </div>
             <div class="actions">
+                <a class="link-button" href="{{ url_for('manage_users') }}">Manage Users</a>
                 <a class="link-button" href="{{ url_for('wfh_plan') }}">View WFH Plan</a>
                 <div class="week-pill">
                     {% if table_data.week_start and table_data.week_end %}
