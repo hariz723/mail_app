@@ -342,6 +342,7 @@ def submit_weekly_wfh_plan(selected_values, week_start_text, week_end_text):
 
     selections = set()
     daily_counts = {weekday_index: 0 for weekday_index in WEEKDAY_COLUMNS}
+    user_counts = {}
 
     for selected_value in selected_values:
         selection = parse_selection(selected_value)
@@ -353,6 +354,19 @@ def submit_weekly_wfh_plan(selected_values, week_start_text, week_end_text):
 
         selections.add(selection)
         daily_counts[selection[1]] += 1
+        user_counts[selection[0]] = user_counts.get(selection[0], 0) + 1
+
+    employees = get_employees()
+    over_limit_users = [
+        employees[employee_index]["name"]
+        for employee_index, count in user_counts.items()
+        if count > 1
+    ]
+    if over_limit_users:
+        return RequestResult(
+            f"Only one WFH day is allowed per user each week. Please reduce: {', '.join(over_limit_users)}.",
+            "error",
+        )
 
     over_limit_days = [
         get_weekday_headers(week_start)[weekday_index]

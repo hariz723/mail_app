@@ -26,99 +26,137 @@ def send_mail(to_email, subject, body, html_body=None):
 
 def build_wfh_summary_html(table_data):
     weekday_prefixes = ("Mon", "Tue", "Wed", "Thu", "Fri")
-    
-    header_html = "".join([
-        f'<th style="padding: 12px 8px; border-bottom: 2px solid #e2e8f0; text-align: center; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">{escape(str(header))}</th>'
+    page_bg = "#f3f6f8"
+    accent = "#0f766e"
+    accent_dark = "#115e59"
+    border = "#d8dee7"
+    muted = "#667085"
+
+    header_html = "".join(
+        f'<th bgcolor="#d9eaf7" style="padding: 10px 8px; border: 1px solid {border}; '
+        f'text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 12px; '
+        f'font-weight: bold; color: #172033;">{escape(str(header))}</th>'
         for header in table_data["headers"]
-    ])
-    
+    )
+
     rows_html = []
     for index, row in enumerate(table_data["rows"]):
-        cells = [f'<td style="padding: 12px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 13px;">{index + 1}</td>']
+        row_bg = "#ffffff" if index % 2 == 0 else "#f8fafc"
+        cells = [
+            f'<td bgcolor="{row_bg}" style="padding: 10px 8px; border: 1px solid {border}; '
+            f'text-align: center; font-family: Arial, Helvetica, sans-serif; color: #667085; '
+            f'font-size: 13px;">{index + 1}</td>'
+        ]
+
         for col_idx, value in enumerate(row):
             header = table_data["headers"][col_idx]
             display_value = value or ""
-            
-            # Base styles for cells
-            cell_style = "padding: 12px 8px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #1e293b;"
-            
-            # Alignment logic
-            if col_idx < 2:
-                cell_style += " text-align: left;"
-            else:
-                cell_style += " text-align: center;"
+            cell_bg = row_bg
+            cell_color = "#151922"
+            font_weight = "normal"
 
-            # WFH Highlighting
+            if col_idx < 2:
+                alignment = "left"
+            else:
+                alignment = "center"
+
             if str(header).startswith(weekday_prefixes):
                 display_value = display_value or "WFO"
                 if display_value == "WFH":
-                    cell_style += " color: #0f766e; font-weight: 600; background-color: #f0fdfa;"
+                    cell_bg = "#e6f5f2"
+                    cell_color = accent_dark
+                    font_weight = "bold"
                 else:
-                    cell_style += " color: #64748b;"
-            
-            cells.append(f'<td style="{cell_style}">{escape(str(display_value))}</td>')
-        
-        bg_color = "#ffffff" if index % 2 == 0 else "#f8fafc"
-        rows_html.append(f'<tr style="background-color: {bg_color};">{"".join(cells)}</tr>')
+                    cell_color = muted
+
+            cells.append(
+                f'<td bgcolor="{cell_bg}" style="padding: 10px 8px; border: 1px solid {border}; '
+                f'text-align: {alignment}; font-family: Arial, Helvetica, sans-serif; '
+                f'font-size: 14px; color: {cell_color}; font-weight: {font_weight};">'
+                f'{escape(str(display_value))}</td>'
+            )
+
+        rows_html.append(f"<tr>{''.join(cells)}</tr>")
 
     return f"""
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
     </head>
-    <body style="margin: 0; padding: 20px 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-        <div style="max-width: 800px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #e2e8f0;">
-            <!-- Header -->
-            <div style="padding: 32px 24px; background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); color: #ffffff;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em;">{escape(str(table_data["title"]))}</h1>
-                <p style="margin: 8px 0 0 0; font-size: 16px; color: #ccfbf1; opacity: 0.9;">Weekly attendance and work plan</p>
-            </div>
-            
-            <!-- Content -->
-            <div style="padding: 24px;">
-                <div style="margin-bottom: 24px; display: inline-block; padding: 6px 12px; background-color: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 20px; color: #0f766e; font-size: 14px; font-weight: 600;">
-                    {escape(str(table_data["week"]))}
-                </div>
-                
-                <p style="margin: 0 0 20px 0; font-size: 15px; color: #475569; line-height: 1.5;">
-                    Hello Team, <br><br>
-                    Please find the updated Work From Home (WFH) schedule for the upcoming week.
-                </p>
-                
-                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                    <table style="width: 100%; border-collapse: separate; border-spacing: 0; min-width: 600px;">
-                        <thead>
-                            <tr>
-                                <th style="padding: 12px 8px; border-bottom: 2px solid #e2e8f0; text-align: center; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">#</th>
-                                {header_html}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {"".join(rows_html)}
-                        </tbody>
+    <body bgcolor="{page_bg}" style="margin: 0; padding: 0; background-color: {page_bg};">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="{page_bg}" style="background-color: {page_bg};">
+            <tr>
+                <td align="center" style="padding: 24px 12px;">
+                    <table role="presentation" width="760" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="width: 760px; max-width: 760px; background-color: #ffffff; border-collapse: collapse; border: 1px solid {border};">
+                        <tr>
+                            <td bgcolor="{accent}" style="padding: 24px; background-color: {accent}; font-family: Arial, Helvetica, sans-serif; color: #ffffff;">
+                                <h1 style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; font-size: 24px; line-height: 30px; font-weight: bold; color: #ffffff;">
+                                    {escape(str(table_data["title"]))}
+                                </h1>
+                                <p style="margin: 8px 0 0 0; padding: 0; font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 22px; color: #d9fffb;">
+                                    Weekly attendance and work plan
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 22px 24px 8px 24px; font-family: Arial, Helvetica, sans-serif;">
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td bgcolor="#e6f5f2" style="padding: 7px 12px; border: 1px solid #cde7e2; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 18px; color: {accent_dark}; font-weight: bold;">
+                                            {escape(str(table_data["week"]))}
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p style="margin: 18px 0 18px 0; padding: 0; font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 22px; color: #475569;">
+                                    Hello Team,<br><br>
+                                    Please find the updated Work From Home (WFH) schedule for the upcoming week.
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0 24px 22px 24px;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr>
+                                            <th bgcolor="#d9eaf7" style="padding: 10px 8px; border: 1px solid {border}; text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold; color: #172033;">#</th>
+                                            {header_html}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {"".join(rows_html)}
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0 24px 24px 24px; font-family: Arial, Helvetica, sans-serif;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; border-top: 1px solid {border};">
+                                    <tr>
+                                        <td style="padding-top: 18px; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 20px; color: {muted};">
+                                            Best regards,<br>
+                                            <strong style="color: #151922;">Design Room Team</strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="{accent_dark}" height="4" style="height: 4px; line-height: 4px; font-size: 0; background-color: {accent_dark};">&nbsp;</td>
+                        </tr>
                     </table>
-                </div>
-                
-                <!-- Footer -->
-                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e2e8f0;">
-                    <p style="margin: 0; font-size: 14px; color: #64748b;">
-                        Best regards,<br>
-                        <strong style="color: #1e293b;">Design Room Team</strong>
-                    </p>
-                </div>
-            </div>
-            
-            <!-- Bottom Accent -->
-            <div style="height: 4px; background: linear-gradient(90deg, #0f766e, #14b8a6);"></div>
-        </div>
-        
-        <div style="max-width: 800px; margin: 16px auto; text-align: center;">
-            <p style="font-size: 12px; color: #94a3b8;">
-                This is an automated notification. Please do not reply directly to this email.
-            </p>
-        </div>
+                    <table role="presentation" width="760" cellpadding="0" cellspacing="0" border="0" style="width: 760px; max-width: 760px;">
+                        <tr>
+                            <td align="center" style="padding: 14px 8px 0 8px; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 18px; color: #94a3b8;">
+                                This is an automated notification. Please do not reply directly to this email.
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
     </body>
     </html>
     """

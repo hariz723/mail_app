@@ -377,6 +377,7 @@
                                             type="checkbox"
                                             name="wfh_selection"
                                             value="{{ row.index }}|{{ day.index }}"
+                                            data-user="{{ row.index }}"
                                             data-day="{{ day.index }}"
                                             {% if day.checked %}checked{% endif %}
                                             aria-label="{{ row.name }} {{ table_data.dates[day.index].label }} {{ table_data.dates[day.index].date }}"
@@ -407,12 +408,16 @@
         const weekdayFormatter = new Intl.DateTimeFormat("en", { weekday: "short" });
         const dateFormatter = new Intl.DateTimeFormat("en", { day: "2-digit", month: "short" });
 
-        function updateDailyLimits() {
+        function updateCheckboxAvailability() {
             const counts = new Map();
+            const selectedByUser = new Map();
+
             checkboxes.forEach((checkbox) => {
                 if (checkbox.checked) {
                     const day = checkbox.dataset.day;
+                    const user = checkbox.dataset.user;
                     counts.set(day, (counts.get(day) || 0) + 1);
+                    selectedByUser.set(user, true);
                 }
             });
 
@@ -423,7 +428,10 @@
 
             checkboxes.forEach((checkbox) => {
                 const day = checkbox.dataset.day;
-                checkbox.disabled = !checkbox.checked && (counts.get(day) || 0) >= dailyLimit;
+                const user = checkbox.dataset.user;
+                const dayIsFull = (counts.get(day) || 0) >= dailyLimit;
+                const userAlreadySelected = selectedByUser.has(user);
+                checkbox.disabled = !checkbox.checked && (dayIsFull || userAlreadySelected);
             });
         }
 
@@ -455,11 +463,11 @@
             });
         }
 
-        checkboxes.forEach((checkbox) => checkbox.addEventListener("change", updateDailyLimits));
+        checkboxes.forEach((checkbox) => checkbox.addEventListener("change", updateCheckboxAvailability));
         weekStartInput.addEventListener("change", updateDateLabels);
         weekEndInput.addEventListener("change", updateDateLabels);
         updateDateLabels();
-        updateDailyLimits();
+        updateCheckboxAvailability();
     </script>
 </body>
 </html>
