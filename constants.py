@@ -1,7 +1,10 @@
+import os
 from pathlib import Path
 
 
-DATA_DIR = Path(__file__).parent
+APP_DIR = Path(__file__).parent
+DATA_DIR = Path(os.getenv("DATA_DIR") or ("/tmp" if os.getenv("VERCEL") else APP_DIR))
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 WORKBOOK_TITLE = "UPCOMING WFH - PLAN"
 EMPLOYEES = []
 VISIBLE_HEADERS = [
