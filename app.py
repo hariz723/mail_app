@@ -21,13 +21,15 @@ app.secret_key = "change-this-secret-key"
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
+        week_start = request.form.get("week_start", "")
+        week_end = request.form.get("week_end", "")
         result = submit_weekly_wfh_plan(
             request.form.getlist("wfh_selection"),
-            request.form.get("week_start", ""),
-            request.form.get("week_end", ""),
+            week_start,
+            week_end,
         )
         flash(result.message, result.category)
-        return redirect(url_for("index"))
+        return redirect(url_for("index", week_start=week_start, week_end=week_end))
 
     return render_template(
         "index.html",

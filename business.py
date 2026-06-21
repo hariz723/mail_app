@@ -410,13 +410,25 @@ def get_wfh_selection_table(week_start_text=None, week_end_text=None):
     requested_week_start = parse_date(week_start_text)
     requested_week_end = parse_date(week_end_text)
 
-    if requested_week_start and not requested_week_end:
+    if not requested_week_start and not requested_week_end:
+        requested_week_start, requested_week_end = current_week_range()
+    elif requested_week_start and not requested_week_end:
         requested_week_end = requested_week_start + timedelta(days=6)
     elif requested_week_end and not requested_week_start:
         requested_week_start = requested_week_end - timedelta(days=6)
 
     week_start = requested_week_start
     week_end = requested_week_end
+
+    if week_start and week_end:
+        range_file = get_range_file(week_start, week_end)
+        if range_file.exists():
+            try:
+                workbook = load_workbook(range_file)
+                selected = get_selected_cells(workbook.active)
+            except Exception:
+                pass
+
     dates = get_working_week_dates(week_start) if week_start else []
     daily_counts = {
         weekday_index: sum(1 for selection in selected if selection[1] == weekday_index)
